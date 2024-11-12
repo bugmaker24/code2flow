@@ -25,5 +25,9 @@ To generate a DOT file, run something like:
 ```bash
 code2flow --downstream-depth depth --target-function "(global)" mypythonfile.py
 ```
+edge structure:
+![image](https://github.com/user-attachments/assets/42bf1485-b82a-4a67-a207-db8f172a33fc)
 
+DAG:
+![image](https://github.com/user-attachments/assets/04e7632a-079f-4136-988a-306c7f5c14f1)
 
