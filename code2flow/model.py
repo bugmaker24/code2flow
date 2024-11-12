@@ -477,8 +477,8 @@ class Edge():
         ret = self.node0.uid + ' -> ' + self.node1.uid
         source_color = int(self.node0.uid.split("_")[-1], 16) % len(EDGE_COLORS)
         # 将 prob 值添加为边的标签  LJJ
-        label = f"probability={self.prob:.2f}"  # 格式化 prob 为两位小数
-        ret += f' [color="{EDGE_COLORS[source_color]}" penwidth="2" label="{label}"]'
+        label = f"p={self.prob:.2f}"  # 格式化 prob 为两位小数
+        ret += f' [color="{EDGE_COLORS[source_color]}" penwidth="2" xlabel="{label}"]'
         return ret
 
     def to_dict(self):
