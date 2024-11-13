@@ -184,11 +184,12 @@ class Call():
         do_something()
 
     """
-    def __init__(self, token, line_number=None, owner_token=None, definite_constructor=False):
+    def __init__(self, token, line_number=None, owner_token=None, definite_constructor=False, branch=1):
         self.token = token
         self.owner_token = owner_token
         self.line_number = line_number
         self.definite_constructor = definite_constructor
+        self.branch = branch
 
     def __repr__(self):
         return f"<Call owner_token={self.owner_token} token={self.token}>"
@@ -491,6 +492,7 @@ class Edge():
             'directed': True,
             'probability': self.prob,  # LJJ
         }
+
 
 
 class Group():

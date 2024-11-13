@@ -6,6 +6,43 @@ from .model import (OWNER_CONST, GROUP_TYPE, Group, Node, Call, Variable,
                     BaseLanguage, djoin)
 
 
+
+
+def count_if_else_branches(call, node):
+    """
+    Count the number of if/else branches that the call is part of in the given AST.
+
+    :param call: Call - The function call to track.
+    :param node: ast - The full AST where the call resides.
+    :return: int - The number of if/else branches this call is part of.
+    """
+    # print(ast.dump(node))
+    NO_ELSE_BRANCH = 2
+    branch_count = 0
+    if isinstance(node, ast.If):
+        if not node.orelse:
+            return NO_ELSE_BRANCH
+
+        while node is not None:
+            if isinstance(node, ast.If):
+                if node.orelse:  # 如果 orelse 非空，说明有 else 或 elif 分支
+                    branch_count += 1  # 当前 if 语句有 else 或 elif 分支
+
+                # 检查 orelse 中的第一个元素是否是一个 if 语句
+                if node.orelse and isinstance(node.orelse[0], ast.If):
+                    node = node.orelse[0]  # 将 node 更新为 orelse 部分的第一个 if 语句，继续遍历
+                else:
+                    branch_count += 1
+                    break  # 如果没有嵌套的 if，跳出循环
+            else:
+                break  # 如果当前节点不是 if 语句，跳出循环
+    if branch_count == 0:
+        branch_count = 1
+    return branch_count
+
+
+
+
 def get_call_from_func_element(func):
     """
     Given a python ast that represents a function call, clear and create our
@@ -45,7 +82,6 @@ def make_calls(lines):
     :param lines list[ast]:
     :rtype: list[Call]
     """
-
     calls = []
     for tree in lines:
         for element in ast.walk(tree):
@@ -53,6 +89,10 @@ def make_calls(lines):
                 continue
             call = get_call_from_func_element(element.func)
             if call:
+                branch_count = count_if_else_branches(call, tree)  # LJJ
+                call.branch = branch_count  # Set the branch count
+                print(call.token)
+                print(call.branch)
                 calls.append(call)
     return calls
 

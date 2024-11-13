@@ -8,9 +8,9 @@ import sys
 import time
 
 from .python import Python
-from .javascript import Javascript
-from .ruby import Ruby
-from .php import PHP
+# from .javascript import Javascript
+# from .ruby import Ruby
+# from .php import PHP
 from .model import (TRUNK_COLOR, LEAF_COLOR, NODE_COLOR, GROUP_TYPE, OWNER_CONST,
                     Edge, Group, Node, Variable, is_installed, flatten)
 
@@ -41,10 +41,10 @@ LEGEND = """subgraph legend{
 
 LANGUAGES = {
     'py': Python,
-    'js': Javascript,
-    'mjs': Javascript,
-    'rb': Ruby,
-    'php': PHP,
+    # 'js': Javascript,
+    # 'mjs': Javascript,
+    # 'rb': Ruby,
+    # 'php': PHP,
 }
 
 
@@ -373,7 +373,7 @@ def _find_link_for_call(call, node_a, all_nodes):
     :param all_nodes list[Node]:
 
     :returns: The node it links to and the call if >1 node matched.
-    :rtype: (Node|None, Call|None)
+    :rtype: (Node|None, Call|None, branch|None)   good call返回调用的node，或者bad call
     """
 
     all_vars = node_a.get_variables(call.line_number)
@@ -383,9 +383,9 @@ def _find_link_for_call(call, node_a, all_nodes):
         if var_match:
             # Unknown modules (e.g. third party) we don't want to match)
             if var_match == OWNER_CONST.UNKNOWN_MODULE:
-                return None, None
+                return None, None, None
             assert isinstance(var_match, Node)
-            return var_match, None
+            return var_match, None, call.branch
 
     possible_nodes = []
     if call.is_attr():
@@ -404,10 +404,10 @@ def _find_link_for_call(call, node_a, all_nodes):
                 possible_nodes.append(node)
 
     if len(possible_nodes) == 1:
-        return possible_nodes[0], None
+        return possible_nodes[0], None, call.branch
     if len(possible_nodes) > 1:
         return None, call
-    return None, None
+    return None, None, None
 
 
 def _find_links(node_a, all_nodes):
@@ -418,7 +418,7 @@ def _find_links(node_a, all_nodes):
     :param Node node_a:
     :param list[Node] all_nodes:
     :param BaseLanguage language:
-    :rtype: list[(Node, Call)]
+    :rtype: list[(Node, Call]
     """
 
     links = []
@@ -519,21 +519,17 @@ def map_it(sources, extension, no_trimming, exclude_namespaces, exclude_function
     bad_calls = []
     edges = []
 
-    # 统计每个节点的出边数量
-    outgoing_links_count = {node: 0 for node in all_nodes}
-    for node in all_nodes:
-        links = _find_links(node, all_nodes)
-        outgoing_links_count[node] = sum(1 for node_b, _ in links if node_b is not None)
 
     for node_a in list(all_nodes):
         links = _find_links(node_a, all_nodes)
-        n = outgoing_links_count[node_a]  # 获取该节点的出边数量  LJJ
-        for node_b, bad_call in links:
+        for node_b, bad_call, branch_count in links:
             if bad_call:
                 bad_calls.append(bad_call)
             if not node_b:
                 continue
-            prob = 1 / n if n > 1 else 1  # 计算概率，暂时设置为1/n  LJJ
+
+            # 设置边的 prob 属性为 1 / n (即 1 / branch_count)
+            prob = 1 / branch_count if branch_count > 1 else 1
             edges.append(Edge(node_a, node_b, prob))  # LJJ
 
    
